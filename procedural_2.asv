@@ -55,7 +55,7 @@ G = tf(num,den);
 % a) faire la conception dun AvPh qui rencontre les criteres PM et erreur
 % en RP (avec la methode 2, Jdel section 7.5.4) sans prendre en
 % consideration le critere BW
-poles = 
+
 
 
 
