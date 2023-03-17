@@ -1,5 +1,39 @@
+
+
+
+clc
+close all
 clear all
 
+
+
+
+%% NOTES
+% POLYVAL(NUN, P*) VA EVALUER LE NUM A CETTE VALEUR P*
+% POLYVAL (DEN, p*) DONC UN DIV PAR LAUTRE VA NOUS DONNER LA FT AU POLE
+% DESIRE
+
+% en faisant polyval(den) / polyval(num) on aura le gain
+
+% avec lieu des racines on prend plot() et les poles desires doivent etre a gauche 
+% il recomande de faire un carre pour les poles obtenus avec un carre
+% representant la compensatiopn
+% si on fait un retard de phase il suggere de faire un cercle, il sera un
+% peu a droite car il sagit dun retard dephase
+
+% ensuite on devra faiore une sur compensation 
+
+% poles obtenus avec lavances
+% poles obtenus avec le retard
+% etc
+
+
+
+
+
+
+
+%% probleme 6
 num = [4500];
 den = [1 361.2 0];
 
@@ -11,6 +45,9 @@ tp = 0.008;
 ts = 0.010;
 err = 0.00005;
 
+
+
+% -------------------------------------------------------------------
 % a)
 
 phi = atand((-1*pi)./log(Mp/100));
@@ -30,6 +67,10 @@ else
      Wn = Wn3;
 end
    
+
+
+
+% -------------------------------------------------------------------
 % b)
 
 Wa = Wn*sqrt(1-zeta^2);
@@ -78,7 +119,9 @@ pol = rlocus(G_new,1)
 plot(real(pol), imag(pol),'s')
 hold on
 
-%% c)
+
+% -------------------------------------------------------------------
+% c)
 
 F = 10;
 
@@ -102,7 +145,15 @@ hold on
 pol = rlocus(G_new,1)
 plot(real(pol), imag(pol),'s')
 
-%% d)
+
+
+
+
+% -------------------------------------------------------------------
+% d)
+
+
+
 
 
 
