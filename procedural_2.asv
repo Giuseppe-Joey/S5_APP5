@@ -15,13 +15,15 @@ clear all
 %syms s
 T = 0.2;
 
-num = [5    50];
-den = [1    2   2];
-G = tf(num, den)
+% num = [5    50];
+% den = [1    2   2];
+% G = tf(num, den)
 
-num = [exp(-T   0];
-den = [1];
-G_cap = tf(exp(num),den)
+s = tf('s');
+sys = exp(-T*s)*
+
+
+% G_conv = conv(G, G_cap)
 
 
 
@@ -44,6 +46,9 @@ G = tf(num,den)
 
 figure
 bode(G)
+
+
+
 
 % a) faire la conception dun AvPh qui rencontre les criteres PM et erreur
 % en RP (avec la methode 2, Jdel section 7.5.4) sans prendre en
@@ -74,9 +79,14 @@ bode(G)
 
 
 
+
+
+
+
 %% probleme 14 : conception avec Bode : AvPh ou RePh avec Methode 2
-
-
+num = [1    2];
+den = [1    2   3   0];
+G = tf(num,den)
 
 
 

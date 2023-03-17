@@ -7,25 +7,27 @@ clear all
 
 
 
-
-
-
 %% probleme 12 : systeme avec retard
 
 %syms s
 T = 0.2;
 
-num = [5    50];
-den = [1    2   2];
-G = tf(num, den)
+% num = [5    50];
+% den = [1    2   2];
+% G = tf(num, den)
 
-num = [exp(-T)   0];
-den = [1];
-G_cap = tf(num,den)
+s = tf('s');
+sys = exp(-T*s)*((5*s + 50)/(s^2 + 2*s + 2))
 
+% utilisation de Pade dordre 5 comme suggere
+% sysx = pade(sys,1)
+% pade(T,1)
+% 
+% sysx = pade(sys,5)
+% pade(T,5)
 
-% G_conv = conv(G, G_cap)
-
+sysx = pade(sys,2)
+pade(T,2)
 
 
 
@@ -43,10 +45,10 @@ e_RP = 0.005;   % erreur en regime permanent a une rampe
 num = [1    4];
 den = [1    8   3   0];
 
-G = tf(num,den)
+G = tf(num,den);
 
-figure
-bode(G)
+% figure
+% bode(G)
 
 
 
@@ -87,7 +89,7 @@ bode(G)
 %% probleme 14 : conception avec Bode : AvPh ou RePh avec Methode 2
 num = [1    2];
 den = [1    2   3   0];
-G = tf(num,den)
+G = tf(num,den);
 
 
 
