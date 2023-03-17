@@ -24,6 +24,9 @@ den = [1];
 G_cap = tf(num,den)
 
 
+% G_conv = conv(G, G_cap)
+
+
 
 
 
