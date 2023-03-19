@@ -44,7 +44,13 @@ Erp_A4_El = 0.08;           % erreur en regime permanent en degre ELEVATION
 
 
 % ----------------------
-% A8 - verifier car certains criteres sont difficiles a atteindre sans
+% CRITERES DE SECURITE
+% ----------------------
+
+
+% ----------------------
+% A8 - 
+% NOTE: verifier car certains criteres sont difficiles a atteindre sans
 % relaxion
 
 
