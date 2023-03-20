@@ -46,6 +46,9 @@
 % lerreur et non pas de la reponse
 
 
+
+
+
 %% ANNEXE A
 % provient de lapp 3
 % classe 1 car 
@@ -82,17 +85,20 @@ Erp_A2 = 0.00;              % erreur en regime permanent
 % Modèle dynamique des deux télescopes en azimut (AZ)
 num = [1.59e09];
 den = [1 1020.51 25082.705 3102480.725 64155612.5 82700000 0];
-FTBO = tf(num, den);
+FTBO = tf(num, den)
 % -------------------
 
 % NOTE: fudge factor on le baisse pour augmenter la rapidite et on le monte pour
 % diminuer la phase
+Fudge_factor = 10;
 
-%on 
+
+%pour telescope A on doit faire lieu des racines
+%pour telescope B on doit faire Bode
 
 
-phi = atand((-1*pi)./log(Mp/100))
-zeta = cosd(phi)
+phi = atand((-1*pi)./log(Mp/100));
+zeta = cosd(phi);
 
 
 %Wn1 et Wn2
@@ -110,15 +116,12 @@ end
 
 Wa = Wn*sqrt(1-zeta^2);
 
-% Kvel = 4500/361.2;
-% Kvel_d = 1/Erp_A2;
-
 p1 = -zeta*Wn + j*Wa;
 p2 = -zeta*Wn - j*Wa;
 
 %phase au pole desire
 %on enleve 360 car sinon angle va donner un angle positif 
-Ph_G = ((angle(polyval(num,p1)/polyval(den,p1)))*180/pi)-360;
+Ph_G = ((angle(polyval(num,p1)/polyval(den,p1)))*(180/pi))-360;
 
 delta_phi = -180-Ph_G;
 alpha = 180-phi;
@@ -132,16 +135,10 @@ pa = real(p1)-imag(p1)/tand(phi_p);
 numFT = [1 -za];
 denFT = [1 -pa];
 
-% FT = tf(numFT,denFT);
+Ka = abs((polyval(den,p1)*polyval(denFT,p1))/(polyval(num,p1)*polyval(numFT,p1)));
+Ga = Ka * tf([1 -za],[1 -pa]);
+FTBO_AvPh = FTBO*Ga;
 
-beta = abs(za)/abs(pa);
-
-% Ka = abs((polyval(den,p1)*polyval(denFT,p1))/(polyval(num,p1)*polyval(numFT,p1)))
-
-Kr = 1;
-Gr = Kr * tf([1 -za],[1 -pa]);
-
-FTBO_comp = FTBO * Gr;
 
 
 figure('Name','Rlocus')
@@ -149,9 +146,9 @@ rlocus(FTBO)
 hold on
 plot(real(p1),imag(p1),'p')
 hold on
-rlocus(FTBO_comp)
+rlocus(FTBO_AvPh)
 hold on
-pol = rlocus(FTBO_comp,1)
+pol = rlocus(FTBO_AvPh,1);
 hold on
 plot(real(pol), imag(pol),'s')
 legend
@@ -166,13 +163,52 @@ margin(FTBO)
 hold on
 plot(real(p1),imag(p1),'p')
 hold on
-margin(FTBO_comp)
+margin(FTBO_AvPh)
 hold on
-pol = rlocus(FTBO_comp,1)
+pol = rlocus(FTBO_AvPh,1);
 hold on
 plot(real(pol), imag(pol),'s')
 grid on
 legend on
+
+
+
+
+
+
+
+
+
+%% retard de phase RePh
+F = 10;
+
+Kvel_d = 
+Kvel = num(1)/den(end-1)
+K_d = Kvel_d/Kvel;
+
+[NUM,DEN] = tfdata(FTBO_AvPh);
+
+p_d = DEN{1} + 1;
+
+zr = real(roots(p_d)) / F;
+zr = zr(1);
+
+pr = abs(zr)/K_d;
+
+Gr = tf([1 -zr],[1 -pr])
+
+
+
+figure
+FTBO_RePh = FTBO_AvPh*Gr
+rlocus(FTBO_RePh)
+hold on
+pol = rlocus(FTBO_RePh,1)
+hold on 
+plot(real(pol), imag(pol),'s')
+
+
+
 
 
 
@@ -189,33 +225,33 @@ legend on
 %% essaie 2
 
 
-PM_des = atand(2*zeta/(sqrt(sqrt(1+4*zeta^4) - (2*zeta^2))));
-[Gm,PM,Wcg,Wcp] = margin(FTBO);
-
-% -------------------------
-% reponse du prof
-pha_des = -180.0 + PM_des;
-wg_des = 0.0;
-wg_dum = [0.1:0.0001:1.0]';         % vecteur de frequences dummy
-[mag, pha] = bode(FTBO, wg_dum);
-ind = find(abs(pha(1,1,:) - pha_des) < 0.005);
-wg_des = wg_dum(ind);
-% -------------------------
-
-
-
-% le gain est simplement linverse du module
-[mag, pha] = bode(FTBO, wg_des);
-K_des = 1/mag;
-
-figure
-margin(FTBO)
-hold on
-% G_augmentee = FTBO*K_des
-FTBO_comp = FTBO*Gr
-% margin(G_augmentee)
-margin(FTBO_comp)
-legend
+% PM_des = atand(2*zeta/(sqrt(sqrt(1+4*zeta^4) - (2*zeta^2))));
+% [Gm,PM,Wcg,Wcp] = margin(FTBO);
+% 
+% % -------------------------
+% % reponse du prof
+% pha_des = -180.0 + PM_des;
+% wg_des = 0.0;
+% wg_dum = [0.1:0.0001:1.0]';         % vecteur de frequences dummy
+% [mag, pha] = bode(FTBO, wg_dum);
+% ind = find(abs(pha(1,1,:) - pha_des) < 0.005);
+% wg_des = wg_dum(ind);
+% % -------------------------
+% 
+% 
+% 
+% % le gain est simplement linverse du module
+% [mag, pha] = bode(FTBO, wg_des);
+% K_des = 1/mag;
+% 
+% figure
+% margin(FTBO)
+% hold on
+% % G_augmentee = FTBO*K_des
+% FTBO_comp = FTBO*Gr
+% % margin(G_augmentee)
+% margin(FTBO_comp)
+% legend
 
 
 

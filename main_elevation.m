@@ -148,27 +148,24 @@ hold on
 pol = rlocus(G_new,1);
 plot(real(pol), imag(pol),'s')
 
-%% Critères de sécurité
 
-%coupe bande
+
+
+
+%% Critères de sécurité - coupe bande
+beta = 40
+W0 = 123;
+
+H = tf([1 0 W0^2],[1 beta W0^2])
 
 
 figure('Name','bode')
-
-margin(G_new)
+bode(G_new)
+hold on
+margin(G_new*H)
 
 [GM_new,PM,Wp,Wg] = margin(G_new)
 DM= PM/Wg*(pi/180)
-
-
-
-
-
-% % Initialisation
-% constantes_APP5 % call le fichier des constantes
-% 
-% Profile_Tracking    % call le fichier Profile_Tracking.p (trajectoire de ref fournie)
-% plot(ttrk,utrk)
 
 
 
