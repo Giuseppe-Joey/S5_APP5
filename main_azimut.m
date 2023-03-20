@@ -85,13 +85,14 @@ den = [1 1020.51 25082.705 3102480.725 64155612.5 82700000 0];
 FTBO = tf(num, den);
 % -------------------
 
+% NOTE: fudge factor on le baisse pour augmenter la rapidite et on le monte pour
+% diminuer la phase
+
+%on 
 
 
 phi = atand((-1*pi)./log(Mp/100))
 zeta = cosd(phi)
-
-
-
 
 
 %Wn1 et Wn2
@@ -107,19 +108,10 @@ elseif Wn2 > Wn1
 end
    
 
-
-
-% -------------------------------------------------------------------
-% b)
-
 Wa = Wn*sqrt(1-zeta^2);
-
-
-
 
 % Kvel = 4500/361.2;
 % Kvel_d = 1/Erp_A2;
-
 
 p1 = -zeta*Wn + j*Wa;
 p2 = -zeta*Wn - j*Wa;
@@ -129,7 +121,6 @@ p2 = -zeta*Wn - j*Wa;
 Ph_G = ((angle(polyval(num,p1)/polyval(den,p1)))*180/pi)-360;
 
 delta_phi = -180-Ph_G;
-
 alpha = 180-phi;
 
 phi_z = (alpha + delta_phi)/2;
@@ -150,13 +141,56 @@ beta = abs(za)/abs(pa);
 Kr = 1;
 Gr = Kr * tf([1 -za],[1 -pa]);
 
+FTBO_comp = FTBO * Gr;
+
+
+figure('Name','Rlocus')
+rlocus(FTBO)
+hold on
+plot(real(p1),imag(p1),'p')
+hold on
+rlocus(FTBO_comp)
+hold on
+pol = rlocus(FTBO_comp,1)
+hold on
+plot(real(pol), imag(pol),'s')
+legend
+
+
+
+
+
+
+figure('Name','Bode')
+margin(FTBO)
+hold on
+plot(real(p1),imag(p1),'p')
+hold on
+margin(FTBO_comp)
+hold on
+pol = rlocus(FTBO_comp,1)
+hold on
+plot(real(pol), imag(pol),'s')
+grid on
+legend on
+
+
+
+
+
+
+
+
+
+
+
+
+
+%% essaie 2
 
 
 PM_des = atand(2*zeta/(sqrt(sqrt(1+4*zeta^4) - (2*zeta^2))));
 [Gm,PM,Wcg,Wcp] = margin(FTBO);
-
-
-
 
 % -------------------------
 % reponse du prof
@@ -182,45 +216,6 @@ FTBO_comp = FTBO*Gr
 % margin(G_augmentee)
 margin(FTBO_comp)
 legend
-
-
-
-
-
-
-
-
-% figure('Name','Rlocus')
-% rlocus(FTBO)
-% hold on
-% plot(real(p1),imag(p1),'p')
-% hold on
-% rlocus(FTBO_comp)
-% hold on
-% pol = rlocus(FTBO_comp,1)
-% hold on
-% plot(real(pol), imag(pol),'s')
-% legend
-
-
-
-
-% 
-% 
-% figure('Name','Bode')
-% margin(FTBO)
-% hold on
-% plot(real(p1),imag(p1),'p')
-% hold on
-% margin(FTBO_comp)
-% hold on
-% pol = rlocus(FTBO_comp,1)
-% hold on
-% plot(real(pol), imag(pol),'s')
-% grid on
-% legend on
-% 
-
 
 
 
