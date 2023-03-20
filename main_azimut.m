@@ -135,6 +135,7 @@ pa = real(p1)-imag(p1)/tand(phi_p);
 numFT = [1 -za];
 denFT = [1 -pa];
 
+% GA VALIDE ET FONCTIONNEL
 Ka = abs((polyval(den,p1)*polyval(denFT,p1))/(polyval(num,p1)*polyval(numFT,p1)));
 Ga = Ka * tf([1 -za],[1 -pa]);
 FTBO_AvPh = FTBO*Ga;
@@ -179,23 +180,23 @@ legend
 
 
 
-%% retard de phase RePh
+%% retard de phase RePh - VALIDE ET FONCTIONNEL
 Fudge_factor = 10;
 
-Kvel_d = 1 / Erp_A2;
-Kvel = num(1)/den(end-1);
-K_des = Kvel_d/Kvel;
 
-[NUM,DEN] = tfdata(FTBO_AvPh);
-p_d = DEN{1} + 1;
+% le v donne les va;lues
+[NUM,DEN] = tfdata(FTBO_AvPh,'v');
 
-zr = real(roots(p_d)) / Fudge_factor;
-zr = zr(1);
+Kvel_d = 1 / Erp_A2
+Kvel = NUM(end)/DEN(end-1)
+K_des = Kvel_d/Kvel
 
-pr = abs(zr)/K_des;
+
+zr = real(p1) / Fudge_factor;
+
+pr = zr/K_des;
 Gr = tf([1 -zr],[1 -pr])
-
-FTBO_RePh = FTBO_AvPh*Gr
+FTBO_RePh = FTBO_AvPh * Gr;
 
 
 
@@ -219,41 +220,6 @@ legend
 
 
 
-
-
-
-
-
-
-%% essaie 2
-
-% PM_des = atand(2*zeta/(sqrt(sqrt(1+4*zeta^4) - (2*zeta^2))));
-% [Gm,PM,Wcg,Wcp] = margin(FTBO);
-% 
-% % -------------------------
-% % reponse du prof
-% pha_des = -180.0 + PM_des;
-% wg_des = 0.0;
-% wg_dum = [0.1:0.0001:1.0]';         % vecteur de frequences dummy
-% [mag, pha] = bode(FTBO, wg_dum);
-% ind = find(abs(pha(1,1,:) - pha_des) < 0.005);
-% wg_des = wg_dum(ind);
-% % -------------------------
-% 
-% 
-% 
-% % le gain est simplement linverse du module
-% [mag, pha] = bode(FTBO, wg_des);
-% K_des = 1/mag;
-% 
-% figure
-% margin(FTBO)
-% hold on
-% % G_augmentee = FTBO*K_des
-% FTBO_comp = FTBO*Gr
-% % margin(G_augmentee)
-% margin(FTBO_comp)
-% legend
 
 
 

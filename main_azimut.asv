@@ -80,7 +80,7 @@ constantes_APP5 % call le fichier des constantes
 Mp = 25;                    % depassement maximum en pourcentage
 ts = 1.00;                  % temps de stabilisation(2%) en secondes
 tm = 0.18;        % temps de montee(10% a 90%) en secondes 
-Erp_A2 = 0.00;              % erreur en regime permanent 
+Erp_A2 = 0.03;              % erreur en regime permanent 
 % ----------------------
 % Modèle dynamique des deux télescopes en azimut (AZ)
 num = [1.59e09];
@@ -135,13 +135,14 @@ pa = real(p1)-imag(p1)/tand(phi_p);
 numFT = [1 -za];
 denFT = [1 -pa];
 
+% Ga valide et bon!!!
 Ka = abs((polyval(den,p1)*polyval(denFT,p1))/(polyval(num,p1)*polyval(numFT,p1)));
 Ga = Ka * tf([1 -za],[1 -pa]);
 FTBO_AvPh = FTBO*Ga;
 
 
 
-figure('Name','Rlocus')
+figure('Name','FTBO et FTBO_AvPh')
 rlocus(FTBO)
 hold on
 plot(real(p1),imag(p1),'p')
@@ -158,18 +159,18 @@ legend
 
 
 
-figure('Name','Bode')
-margin(FTBO)
-hold on
-plot(real(p1),imag(p1),'p')
-hold on
-margin(FTBO_AvPh)
-hold on
-pol = rlocus(FTBO_AvPh,1);
-hold on
-plot(real(pol), imag(pol),'s')
-grid on
-legend on
+% figure('Name','FTBO et FTBO_AvPh')
+% margin(FTBO)
+% hold on
+% plot(real(p1),imag(p1),'p')
+% hold on
+% margin(FTBO_AvPh)
+% hold on
+% pol = rlocus(FTBO_AvPh,1);
+% hold on
+% plot(real(pol), imag(pol),'s')
+% grid on
+% legend on
 
 
 
@@ -180,33 +181,42 @@ legend on
 
 
 %% retard de phase RePh
-F = 10;
+Fudge_factor = 10;
 
-Kvel_d = 
-Kvel = num(1)/den(end-1)
-K_d = Kvel_d/Kvel;
 
-[NUM,DEN] = tfdata(FTBO_AvPh);
+% le v donne les va;lues
+[NUM,DEN] = tfdata(FTBO_AvPh,'v');
 
-p_d = DEN{1} + 1;
+Kvel_d = 1 / Erp_A2
+Kvel = NUM(end)/DEN(end-1)
+K_des = Kvel_d/Kvel
 
-zr = real(roots(p_d)) / F;
-zr = zr(1);
 
-pr = abs(zr)/K_d;
+
+% polke des pas bon prendre num 1 du labo  on prend le pire cas des wn
+% p_d = DEN{1} + 1;
+
+zr = real(p1) / Fudge_factor;
+% zr = zr(1);
+
+pr = zr/K_des;
 
 Gr = tf([1 -zr],[1 -pr])
+FTBO_RePh = FTBO_AvPh * Gr;
 
 
 
-figure
-FTBO_RePh = FTBO_AvPh*Gr
+figure('Name','FTBO et FTBO_RePh')
+rlocus(FTBO)
+hold on
+plot(real(p1),imag(p1),'p')
+hold on
 rlocus(FTBO_RePh)
 hold on
-pol = rlocus(FTBO_RePh,1)
-hold on 
+pol = rlocus(FTBO_RePh,1);
+hold on
 plot(real(pol), imag(pol),'s')
-
+legend
 
 
 
@@ -223,7 +233,6 @@ plot(real(pol), imag(pol),'s')
 
 
 %% essaie 2
-
 
 % PM_des = atand(2*zeta/(sqrt(sqrt(1+4*zeta^4) - (2*zeta^2))));
 % [Gm,PM,Wcg,Wcp] = margin(FTBO);
