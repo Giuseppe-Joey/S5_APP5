@@ -56,16 +56,119 @@
 
 
 
-%% DEBUT DE La problematique
+%% Critères de conception
 clc
 close all
 clear all
 
-% Initialisation
-constantes_APP5 % call le fichier des constantes
+numEL = [7.95e09];
+denEL = [1 1020.51 37082.705 15346520.725 320776412.5 413500000 0];
 
-Profile_Tracking    % call le fichier Profile_Tracking.p (trajectoire de ref fournie)
-plot(ttrk,utrk)
+G = tf(numEL,denEL)
+
+Mp = 25;
+ts = 1;
+tr1 = 0.18;
+eRP_des = 0.08;           % erreur en regime permanent a une rampe
+fudge_factor = 10;      % facteur qui pousse vers zero
+
+
+phi = atand((-1*pi)./log(Mp/100));
+zeta = cosd(phi);
+
+%Wn1 et Wn2
+Wn1 = (4/ts)/zeta;
+Wn2 = (1+1.1*zeta+1.4*zeta^2)/tr1;
+
+%Bigger Wn
+if Wn1 > Wn2
+    Wn = Wn1;     
+else
+     Wn = Wn2;
+end
+
+Wa = Wn*sqrt(1-zeta^2);
+
+p1 = -zeta*Wn + j*Wa;
+p2 = -zeta*Wn - j*Wa;
+% AvPh
+%phase au pole desire
+%on enleve 360 car sinon angle va donner un angle positif 
+Ph_G = ((angle(polyval(numEL,p1)/polyval(denEL,p1)))*180/pi)-360;
+
+delta_phi = -180-Ph_G;
+
+alpha = 180-phi;
+
+phi_z = (alpha + delta_phi)/2
+phi_p = (alpha - delta_phi)/2
+
+za = real(p1)-imag(p1)/tand(phi_z)
+pa = real(p1)-imag(p1)/tand(phi_p)
+
+numFT = [1 -za];
+denFT = [1 -pa];
+
+% FT = tf(numFT,denFT);
+
+Ka = abs((polyval(denEL,p1)*polyval(denFT,p1))/(polyval(numEL,p1)*polyval(numFT,p1)))
+
+Ga = Ka * tf([1 -za],[1 -pa])
+
+% G_new = G*Ga
+% [num,den] = tfdata(G_new);
+% PI
+Kvel = 2.531e11/1.091e10;
+
+KI = 1/(Kvel*eRP_des);
+
+ZI = real(p1)/fudge_factor;
+
+Kp = -KI/ZI;
+
+GPI = Kp * tf([1 -ZI],[1 0])
+
+G_new = G*GPI*Ga %%%% changer 11 pour la vrai valeur
+
+
+
+% figure
+% bode(G)
+% figure
+% margin(G_new)
+
+
+figure('Name','compense')
+
+plot(real(p1),imag(p1),'p')
+
+hold on
+rlocus(G_new)
+hold on
+pol = rlocus(G_new,1);
+plot(real(pol), imag(pol),'s')
+
+%% Critères de sécurité
+
+%coupe bande
+
+
+figure('Name','bode')
+
+margin(G_new)
+
+[GM_new,PM,Wp,Wg] = margin(G_new)
+DM= PM/Wg*(pi/180)
+
+
+
+
+
+% % Initialisation
+% constantes_APP5 % call le fichier des constantes
+% 
+% Profile_Tracking    % call le fichier Profile_Tracking.p (trajectoire de ref fournie)
+% plot(ttrk,utrk)
 
 
 
