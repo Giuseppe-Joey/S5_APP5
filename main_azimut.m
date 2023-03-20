@@ -132,37 +132,55 @@ delta_phi = -180-Ph_G;
 
 alpha = 180-phi;
 
-phi_z = (alpha + delta_phi)/2
-phi_p = (alpha - delta_phi)/2
+phi_z = (alpha + delta_phi)/2;
+phi_p = (alpha - delta_phi)/2;
 
-za = real(p1)-imag(p1)/tand(phi_z)
-pa = real(p1)-imag(p1)/tand(phi_p)
+za = real(p1)-imag(p1)/tand(phi_z);
+pa = real(p1)-imag(p1)/tand(phi_p);
 
 numFT = [1 -za];
 denFT = [1 -pa];
 
 % FT = tf(numFT,denFT);
 
-beta = abs(za)/abs(pa)
+beta = abs(za)/abs(pa);
 
 % Ka = abs((polyval(den,p1)*polyval(denFT,p1))/(polyval(num,p1)*polyval(numFT,p1)))
 
 Kr = 1;
-Gr = Kr * tf([1 -za],[1 -pa])
+Gr = Kr * tf([1 -za],[1 -pa]);
 
+
+
+PM_des = atand(2*zeta/(sqrt(sqrt(1+4*zeta^4) - (2*zeta^2))));
+[Gm,PM,Wcg,Wcp] = margin(FTBO);
+
+
+
+
+% -------------------------
+% reponse du prof
+pha_des = -180.0 + PM_des;
+wg_des = 0.0;
+wg_dum = [0.1:0.0001:1.0]';         % vecteur de frequences dummy
+[mag, pha] = bode(FTBO, wg_dum);
+ind = find(abs(pha(1,1,:) - pha_des) < 0.005);
+wg_des = wg_dum(ind);
+% -------------------------
+
+
+
+% le gain est simplement linverse du module
+[mag, pha] = bode(FTBO, wg_des);
+K_des = 1/mag;
+
+figure
+margin(FTBO)
+hold on
+% G_augmentee = FTBO*K_des
 FTBO_comp = FTBO*Gr
-
-
-figure('Name','Rlocus')
-rlocus(FTBO)
-hold on
-plot(real(p1),imag(p1),'p')
-hold on
-rlocus(FTBO_comp)
-hold on
-pol = rlocus(FTBO_comp,1)
-hold on
-plot(real(pol), imag(pol),'s')
+% margin(G_augmentee)
+margin(FTBO_comp)
 legend
 
 
@@ -170,19 +188,38 @@ legend
 
 
 
-figure('Name','Bode')
-margin(FTBO)
-hold on
-plot(real(p1),imag(p1),'p')
-hold on
-margin(FTBO_comp)
-hold on
-pol = rlocus(FTBO_comp,1)
-hold on
-plot(real(pol), imag(pol),'s')
-grid on
-legend on
 
+
+% figure('Name','Rlocus')
+% rlocus(FTBO)
+% hold on
+% plot(real(p1),imag(p1),'p')
+% hold on
+% rlocus(FTBO_comp)
+% hold on
+% pol = rlocus(FTBO_comp,1)
+% hold on
+% plot(real(pol), imag(pol),'s')
+% legend
+
+
+
+
+% 
+% 
+% figure('Name','Bode')
+% margin(FTBO)
+% hold on
+% plot(real(p1),imag(p1),'p')
+% hold on
+% margin(FTBO_comp)
+% hold on
+% pol = rlocus(FTBO_comp,1)
+% hold on
+% plot(real(pol), imag(pol),'s')
+% grid on
+% legend on
+% 
 
 
 

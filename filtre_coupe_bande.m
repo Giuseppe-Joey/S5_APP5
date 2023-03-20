@@ -1,5 +1,16 @@
 
 
+%%  S5 - APP4 - PROBLEMATIQUE - filtre_coupe_bande.m
+%   Auteur:     Giuseppe Lomonaco
+%   CIP:        LOMG2301
+%   Auteur:     Lucas Corrales
+%   CIP:        CORL0701
+
+%   Date de creation:       13-MARS-2023
+%   Date de derniere modification:       13-MARS-2023
+
+% DESCRIPTION: exemple de filtre coupe bande en Matlab
+
 
 clear all
 close all
