@@ -64,12 +64,106 @@ clear all
 % Initialisation
 constantes_APP5 % call le fichier des constantes
 
-Profile_Tracking    % call le fichier Profile_Tracking.p (trajectoire de ref fournie)
-plot(ttrk,utrk)
+% Profile_Tracking    % call le fichier Profile_Tracking.p (trajectoire de ref fournie)
+% plot(ttrk,utrk)
 
 
 
 
+
+%% azimut code 
+
+% A2 - Reponse a un echelon unitaire:
+Mp = 25;                    % depassement maximum en pourcentage
+ts = 1.00;                  % temps de stabilisation(2%) en secondes
+tm = 0.18;        % temps de montee(10% a 90%) en secondes 
+Erp_A2 = 0.00;              % erreur en regime permanent 
+% ----------------------
+% Modèle dynamique des deux télescopes en azimut (AZ)
+num = [1.59e09];
+den = [1 1020.51 25082.705 3102480.725 64155612.5 82700000 0];
+FTBO = tf(num, den);
+% -------------------
+
+
+
+phi = atand((-1*pi)./log(Mp/100))
+zeta = cosd(phi)
+
+
+
+
+
+%Wn1 et Wn2
+Wn1 = (4/ts)/zeta;
+Wn2 = (1+1.1*zeta+1.4*zeta^2)/tm;
+% Wn3 = pi/(tp*sqrt(1-zeta^2));
+
+%Bigger Wn
+if Wn1 > Wn2
+    Wn = Wn1; 
+elseif Wn2 > Wn1
+     Wn = Wn2;     
+end
+   
+
+
+
+% -------------------------------------------------------------------
+% b)
+
+Wa = Wn*sqrt(1-zeta^2);
+
+
+
+
+% Kvel = 4500/361.2;
+% Kvel_d = 1/Erp_A2;
+
+
+p1 = -zeta*Wn + j*Wa;
+p2 = -zeta*Wn - j*Wa;
+
+%phase au pole desire
+%on enleve 360 car sinon angle va donner un angle positif 
+Ph_G = ((angle(polyval(num,p1)/polyval(den,p1)))*180/pi)-360;
+
+delta_phi = -180-Ph_G;
+
+alpha = 180-phi;
+
+phi_z = (alpha + delta_phi)/2
+phi_p = (alpha - delta_phi)/2
+
+za = real(p1)-imag(p1)/tand(phi_z)
+pa = real(p1)-imag(p1)/tand(phi_p)
+
+numFT = [1 -za];
+denFT = [1 -pa];
+
+% FT = tf(numFT,denFT);
+
+beta = abs(za)/abs(pa)
+
+% Ka = abs((polyval(den,p1)*polyval(denFT,p1))/(polyval(num,p1)*polyval(numFT,p1)))
+
+Kr = 1;
+Gr = Kr * tf([1 -za],[1 -pa])
+
+FTBO_comp = FTBO*Gr
+
+
+figure('Name','....')
+rlocus(FTBO)
+hold on
+plot(real(p1),imag(p1),'p')
+hold on
+rlocus(FTBO_comp)
+hold on
+pol = rlocus(FTBO_comp,1)
+hold on
+plot(real(pol), imag(pol),'s')
+legend
 
 
 

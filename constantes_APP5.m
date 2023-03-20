@@ -66,7 +66,7 @@ Erp_A4_El = 0.08;           % erreur en regime permanent en degre ELEVATION
 % Modèle dynamique des deux télescopes en azimut (AZ)
 numAZ = [1.59e09];
 denAZ = [1 1020.51 25082.705 3102480.725 64155612.5 82700000 0];
-TF_AZ = tf(numAZ, denAZ)
+TF_AZ = tf(numAZ, denAZ);
 
 
 
@@ -74,7 +74,7 @@ TF_AZ = tf(numAZ, denAZ)
 % Modèle dynamique des deux télescopes en élévation (EL)
 numEL = [7.95e09];
 denEL = [1 1020.51 37082.705 15346520.725 320776412.5 413500000 0];
-TF_EL = tf(numEL, denEL)
+TF_EL = tf(numEL, denEL);
 
 
 
