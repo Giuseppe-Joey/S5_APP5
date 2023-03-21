@@ -123,8 +123,8 @@ p2 = -zeta*Wn - j*Wa;
 %on enleve 360 car sinon angle va donner un angle positif 
 Ph_G = ((angle(polyval(num,p1)/polyval(den,p1)))*(180/pi))-360;
 
-delta_phi = -180-Ph_G;
-alpha = 180-phi;
+delta_phi = -180 - Ph_G;
+alpha = 180 - phi;
 
 phi_z = (alpha + delta_phi)/2;
 phi_p = (alpha - delta_phi)/2;
@@ -137,22 +137,91 @@ denFT = [1 -pa];
 
 % GA VALIDE ET FONCTIONNEL
 Ka = abs((polyval(den,p1)*polyval(denFT,p1))/(polyval(num,p1)*polyval(numFT,p1)));
-Ga = Ka * tf([1 -za],[1 -pa])
-FTBO_AvPh = FTBO * Ga;
+Ga = Ka * tf([1 -za],[1 -pa]);
+FTBO_AvPh = FTBO*Ga;
 
 
 
-figure('Name','FTBO et FTBO_AvPh')
-rlocus(FTBO)
-hold on
-plot(real(p1),imag(p1),'p')
-hold on
-rlocus(FTBO_AvPh)
-hold on
-pol = rlocus(FTBO_AvPh,1);
-hold on
-plot(real(pol), imag(pol),'s')
-legend
+
+
+
+
+
+% figure('Name','FTBO et FTBO_AvPh')
+% rlocus(FTBO)
+% hold on
+% plot(real(p1),imag(p1),'p')
+% hold on
+% rlocus(FTBO_AvPh)
+% hold on
+% pol = rlocus(FTBO_AvPh,1);
+% hold on
+% plot(real(pol), imag(pol),'s')
+% legend
+% 
+% 
+% 
+% figure('Name','FTBO et FTBO_AvPh')
+% margin(FTBO)
+% hold on
+% plot(real(p1),imag(p1),'p')
+% hold on
+% margin(FTBO_AvPh)
+% hold on
+% pol = rlocus(FTBO_AvPh,1);
+% hold on
+% plot(real(pol), imag(pol),'s')
+% grid on
+% legend
+
+
+
+
+
+
+
+
+
+
+
+
+%% Critères de sécurité
+
+%coupe bande
+
+beta = 5
+W0 = 55;        %obtenu a partir du diagramme de Bode
+
+H = tf([1 0 W0^2],[1 beta W0^2])
+G_bandeCoupee = FTBO_AvPh * H
+
+% figure('Name','bode')
+% bode(G_new)
+% hold on
+% margin(G_CB)
+
+% Valider DM
+[GM,PM,Wp,Wg] = margin(G_bandeCoupee)
+DM = PM/Wg*(pi/180)
+
+% Ajuster le gain
+GM_DB = mag2db(GM)
+GM_des = 15;
+GM_compDB = GM_DB - GM_des;
+GM_comp = db2mag(GM_compDB);
+
+G_comp = (GM_comp * G_bandeCoupee);
+
+FTBF = feedback(G_comp,1)
+
+
+figure('Name','FTBF compensee')
+margin(FTBF)
+
+
+
+
+
 
 
 
@@ -171,11 +240,11 @@ Kvel_d = 1 / Erp_A2
 Kvel = NUM(end)/DEN(end-1)
 K_des = Kvel_d/Kvel
 
-zr = real(p1) / Fudge_factor;
-pr = zr/K_des;
 
-Kr = 1;
-Gr = Kr * tf([1 -zr],[1 -pr])
+zr = real(p1) / Fudge_factor;
+
+pr = zr/K_des;
+Gr = tf([1 -zr],[1 -pr])
 FTBO_RePh = FTBO_AvPh * Gr;
 
 
@@ -191,7 +260,6 @@ pol = rlocus(FTBO_RePh,1);
 hold on
 plot(real(pol), imag(pol),'s')
 legend
-
 
 
 
