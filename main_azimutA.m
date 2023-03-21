@@ -254,6 +254,7 @@ y = lsim(FTBF,u,t);
 figure
 plot(t,u-y)
 
+
 %% plot
 
 % Valider DM
