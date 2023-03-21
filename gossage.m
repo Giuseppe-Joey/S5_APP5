@@ -60,7 +60,8 @@
 clc
 close all
 clear all
-
+for i = 1:3
+for k = 1:3
 numEL = [7.95e09];
 denEL = [1 1020.51 37082.705 15346520.725 320776412.5 413500000 0];
 
@@ -70,12 +71,12 @@ Mp = 25;
 ts = 1;
 tr1 = 0.18;
 eRP_des = 0.08;           % erreur en regime permanent a une rampe
-fudge_factor = 9;      % facteur qui pousse vers zero
-marge = -10;
+fudge_factor = 2+2*k;      % facteur qui pousse vers zero
+marge = -8;
 
 
 phi = atand((-1*pi)./log(Mp/100));
-zeta = cosd(phi)+0.165;
+zeta = cosd(phi)+0.1+0.01*i;
 
 %Wn1 et Wn2
 Wn1 = (4/ts)/zeta;
@@ -130,37 +131,12 @@ GPI = Kp * tf([1 -ZI],[1 0])
 G_new = G*GPI*Ga 
 
 
-
-% figure
-% bode(G)
-% figure
-% margin(G_new)
-% figure('Name','noncompense')
-% rlocus(G)
-% figure('Name','compense')
-% 
-% plot(real(p1),imag(p1),'p')
-% 
-% hold on
-% rlocus(G_new)
-% hold on
-% pol = rlocus(G_new,1);
-% plot(real(pol), imag(pol),'s')
-
-%% Critères de sécurité
-
-%coupe bande
-
 beta = 2
 W0 = 123;
 
 H = tf([1 0 W0^2],[1 beta W0^2])
 G_CB = G_new*H
 
-% figure('Name','bode')
-% bode(G_new)
-% hold on
-% margin(G_CB)
 
 % Valider DM
 [GM,PM,Wp,Wg] = margin(G_CB)
@@ -172,21 +148,18 @@ GM_des = 15;
 GM_compDB = GM_DB-GM_des;
 GM_comp = db2mag(GM_compDB);
 
-G_comp = (GM_comp*G_CB)*(0.0475/0.08);
+G_comp = (GM_comp*G_CB)*(0.0525/0.08);
 
 FTBF = feedback(G_comp,1)
-
-
-%% erreur
 
 t = [0:0.01:100]';  % 201 points
 u = t.^2 / 2;
 y = lsim(FTBF,u,t);
 
-figure
+figure(1)
 plot(t,u-y)
+hold on
 
-%% plot
 
 % Valider DM
 [GM,PM,Wp,Wg] = margin(G_comp);
@@ -194,24 +167,26 @@ DM= PM/Wg*(pi/180)
 GM = mag2db(GM)
 
 
-figure('Name','bode comp')
-margin(G_comp)
-figure('Name','rlocus comp')
-plot(real(p1),imag(p1),'p')
-hold on
-rlocus(G_comp)
-hold on
-pol = rlocus(G_new,1);
-plot(real(pol), imag(pol),'s')
+% figure('Name','bode comp')
+% margin(G_comp)
+% figure('Name','rlocus comp')
+% plot(real(p1),imag(p1),'p')
+% hold on
+% rlocus(G_comp)
+% hold on
+% pol = rlocus(G_new,1);
+% plot(real(pol), imag(pol),'s')
 
-figure
+figure(4)
 bode(FTBF)
-figure
+hold on
+figure(5)
 step(FTBF)
+hold on
 
-
-
-
+end
+end
+legend
 
 % % Initialisation
 % constantes_APP5 % call le fichier des constantes

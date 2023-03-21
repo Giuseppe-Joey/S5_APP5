@@ -275,7 +275,7 @@ PM_des = atand(2*zeta/(sqrt(sqrt(1+4*zeta^4) - (2*zeta^2))))
 
 
 % -------------------------
-% reponse du prof
+% reponse du prof pour iterations
 pha_des = -180.0 + PM_des
 wg_des = 0.0;
 wg_dum = [0.1:0.0001:1.0]';         % vecteur de frequences dummy
