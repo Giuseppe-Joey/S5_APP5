@@ -72,6 +72,10 @@ constantes_APP5 % call le fichier des constantes
 
 
 
+% NOTE: fudge factor on le baisse pour augmenter la rapidite et on le monte pour
+% diminuer la phase
+Fudge_factor = 10;
+
 
 
 %% azimut code 
@@ -88,18 +92,8 @@ den = [1 1020.51 25082.705 3102480.725 64155612.5 82700000 0];
 FTBO = tf(num, den)
 % -------------------
 
-% NOTE: fudge factor on le baisse pour augmenter la rapidite et on le monte pour
-% diminuer la phase
-Fudge_factor = 10;
-
-
-%pour telescope A on doit faire lieu des racines
-%pour telescope B on doit faire Bode
-
-
 phi = atand((-1*pi)./log(Mp/100));
 zeta = cosd(phi);
-
 
 %Wn1 et Wn2
 Wn1 = (4/ts)/zeta;
@@ -113,7 +107,6 @@ elseif Wn2 > Wn1
      Wn = Wn2;     
 end
    
-
 Wa = Wn*sqrt(1-zeta^2);
 
 p1 = -zeta*Wn + j*Wa;
@@ -139,13 +132,6 @@ denFT = [1 -pa];
 Ka = abs((polyval(den,p1)*polyval(denFT,p1))/(polyval(num,p1)*polyval(numFT,p1)));
 Ga = Ka * tf([1 -za],[1 -pa]);
 FTBO_AvPh = FTBO*Ga;
-
-
-
-
-
-
-
 
 % figure('Name','FTBO et FTBO_AvPh')
 % rlocus(FTBO)
@@ -188,12 +174,11 @@ FTBO_AvPh = FTBO*Ga;
 %% Critères de sécurité
 
 %coupe bande
-
 beta = 5
 W0 = 55;        %obtenu a partir du diagramme de Bode
 
-H = tf([1 0 W0^2],[1 beta W0^2])
-G_bandeCoupee = FTBO_AvPh * H
+H = tf([1 0 W0^2],[1 beta W0^2]);
+G_bandeCoupee = FTBO_AvPh * H;
 
 % figure('Name','bode')
 % bode(G_new)
@@ -201,25 +186,27 @@ G_bandeCoupee = FTBO_AvPh * H
 % margin(G_CB)
 
 % Valider DM
-[GM,PM,Wp,Wg] = margin(G_bandeCoupee)
-DM = PM/Wg*(pi/180)
+[GM,PM,Wp,Wg] = margin(G_bandeCoupee);
+DM = PM/Wg*(pi/180);
 
 % Ajuster le gain
-GM_DB = mag2db(GM)
+GM_DB = mag2db(GM);
 GM_des = 15;
 GM_compDB = GM_DB - GM_des;
 GM_comp = db2mag(GM_compDB);
 
 G_comp = (GM_comp * G_bandeCoupee);
 
-FTBF = feedback(G_comp,1)
+FTBF = feedback(G_comp,1);
 
 
-figure('Name','FTBF compensee')
+
+figure('Name','Margin FTBF compensee')
 margin(FTBF)
-
-
-
+figure('Name','Bode FTBF compensee')
+bode(FTBF)
+figure('Name','Step FTBF compensee')
+step(FTBF)
 
 
 
