@@ -1,4 +1,4 @@
-%%  S5 - APP4 - PROBLEMATIQUE - MAIN.M
+%%  S5 - APP4 - PROBLEMATIQUE - MAIN_AZIMUT.M
 %   Auteur:     Giuseppe Lomonaco
 %   CIP:        LOMG2301
 %   Auteur:     Lucas Corrales
@@ -46,6 +46,9 @@
 % lerreur et non pas de la reponse
 
 
+
+
+
 %% ANNEXE A
 % provient de lapp 3
 % classe 1 car 
@@ -56,131 +59,189 @@
 
 
 
-%% Critères de conception
+%% DEBUT DE La problematique
 clc
 close all
 clear all
 
-numEL = [7.95e09];
-denEL = [1 1020.51 37082.705 15346520.725 320776412.5 413500000 0];
+% Initialisation
+constantes_APP5 % call le fichier des constantes
 
-G = tf(numEL,denEL)
+% Profile_Tracking    % call le fichier Profile_Tracking.p (trajectoire de ref fournie)
+% plot(ttrk,utrk)
 
-Mp = 25;
-ts = 1;
-tr1 = 0.18;
-eRP_des = 0.08;           % erreur en regime permanent a une rampe
-fudge_factor = 9;      % facteur qui pousse vers zero
-marge = 10;
 
+
+% NOTE: fudge factor on le baisse pour augmenter la rapidite et on le monte pour
+% diminuer la phase
+Fudge_factor = 10;
+
+
+
+%% azimut code 
+
+% A2 - Reponse a un echelon unitaire:
+Mp = 25;                    % depassement maximum en pourcentage
+ts = 1.00;                  % temps de stabilisation(2%) en secondes
+tm = 0.18;        % temps de montee(10% a 90%) en secondes 
+Erp_A2 = 0.03;              % erreur en regime permanent 
+% ----------------------
+% Modèle dynamique des deux télescopes en azimut (AZ)
+num = [1.59e09];
+den = [1 1020.51 25082.705 3102480.725 64155612.5 82700000 0];
+FTBO = tf(num, den)
+% -------------------
 
 phi = atand((-1*pi)./log(Mp/100));
 zeta = cosd(phi)+0.165;
 
 %Wn1 et Wn2
 Wn1 = (4/ts)/zeta;
-Wn2 = (1+1.1*zeta+1.4*zeta^2)/tr1;
+Wn2 = (1+1.1*zeta+1.4*zeta^2)/tm;
+% Wn3 = pi/(tp*sqrt(1-zeta^2));
 
 %Bigger Wn
 if Wn1 > Wn2
-    Wn = Wn1;     
-else
-     Wn = Wn2;
+    Wn = Wn1; 
+elseif Wn2 > Wn1
+     Wn = Wn2;     
 end
-
+   
 Wa = Wn*sqrt(1-zeta^2);
 
 p1 = -zeta*Wn + j*Wa;
 p2 = -zeta*Wn - j*Wa;
-% AvPh
+
 %phase au pole desire
 %on enleve 360 car sinon angle va donner un angle positif 
-Ph_G = ((angle(polyval(numEL,p1)/polyval(denEL,p1)))*180/pi)-360;
+Ph_G = ((angle(polyval(num,p1)/polyval(den,p1)))*(180/pi))-360;
 
-delta_phi = -180-Ph_G+marge;
+delta_phi = -180 - Ph_G;
+alpha = 180 - phi;
 
-alpha = 180-phi;
+phi_z = (alpha + delta_phi)/2;
+phi_p = (alpha - delta_phi)/2;
 
-phi_z = (alpha + delta_phi)/2
-phi_p = (alpha - delta_phi)/2
-
-za = real(p1)-imag(p1)/tand(phi_z)
-pa = real(p1)-imag(p1)/tand(phi_p)
+za = real(p1)-imag(p1)/tand(phi_z);
+pa = real(p1)-imag(p1)/tand(phi_p);
 
 numFT = [1 -za];
 denFT = [1 -pa];
 
-Ka = abs((polyval(denEL,p1)*polyval(denFT,p1))/(polyval(numEL,p1)*polyval(numFT,p1)))
+% GA VALIDE ET FONCTIONNEL
+Ka = abs((polyval(den,p1)*polyval(denFT,p1))/(polyval(num,p1)*polyval(numFT,p1)));
+Ga = Ka * tf([1 -za],[1 -pa]);
+FTBO_AvPh = FTBO*Ga;
 
-Ga = Ka * tf([1 -za],[1 -pa])
-
-% G_new = G*Ga
-% [num,den] = tfdata(G_new);
-% PI
-Kvel = 2.531e11/1.091e10;
-
-KI = 1/(Kvel*eRP_des);
-
-ZI = real(p1)/fudge_factor;
-
-Kp = -KI/ZI;
-
-GPI = Kp * tf([1 -ZI],[1 0])
-
-G_new = G*GPI*Ga 
-
-
-
-% figure
-% bode(G)
-% figure
-% margin(G_new)
-% figure('Name','noncompense')
-% rlocus(G)
-% figure('Name','compense')
-% 
+% figure('Name','FTBO et FTBO_AvPh')
+% rlocus(FTBO)
+% hold on
 % plot(real(p1),imag(p1),'p')
-% 
-hold on
-rlocus(G)
-hold on
-pol = rlocus(G_new,1);
-plot(real(pol), imag(pol),'s')
+% hold on
+% rlocus(FTBO_AvPh)
+% hold on
+% pol = rlocus(FTBO_AvPh,1);
+% hold on
+% plot(real(pol), imag(pol),'s')
+% legend
+
+
+
+% figure('Name','FTBO et FTBO_AvPh')
+% margin(FTBO)
+% hold on
+% plot(real(p1),imag(p1),'p')
+% hold on
+% margin(FTBO_AvPh)
+% hold on
+% pol = rlocus(FTBO_AvPh,1);
+% hold on
+% plot(real(pol), imag(pol),'s')
+% grid on
+% legend
+%% retard de phase RePh - VALIDE ET FONCTIONNEL
+Fudge_factor = 10;
+
+
+% le v donne les va;lues
+[NUM,DEN] = tfdata(FTBO_AvPh,'v');
+
+Kvel_d = 1 / Erp_A2
+Kvel = NUM(end)/DEN(end-1)
+K_des = Kvel_d/Kvel
+
+
+zr = real(p1) / Fudge_factor;
+
+pr = zr/K_des;
+Gr = tf([1 -zr],[1 -pr])
+G_comp = FTBO_AvPh * Gr;
+
+
+
+% figure('Name','FTBO et FTBO_RePh')
+% rlocus(FTBO)
+% hold on
+% plot(real(p1),imag(p1),'p')
+% hold on
+% rlocus(FTBO_RePh)
+% hold on
+% pol = rlocus(FTBO_RePh,1);
+% hold on
+% plot(real(pol), imag(pol),'s')
+% legend
+
+
+
+
+
+
+
+
+
+
 
 %% Critères de sécurité
 
 %coupe bande
+beta = 10;
+W0 = 55;        %obtenu a partir du diagramme de Bode
 
-beta = 2
-W0 = 123;
-
-H = tf([1 0 W0^2],[1 beta W0^2])
-G_CB = G_new*H
+H = tf([1 0 W0^2],[1 beta W0^2]);
+G_bandeCoupee = G_comp * H;
 
 % figure('Name','bode')
-% bode(G_new)
+% bode(FTBO_AvPh)
 % hold on
-% margin(G_CB)
+% margin(G_bandeCoupee)
 
 % Valider DM
-[GM,PM,Wp,Wg] = margin(G_CB)
-DM= PM/Wg*(pi/180)
+[GM,PM,Wp,Wg] = margin(G_bandeCoupee);
+DM = PM/Wg*(pi/180);
 
 % Ajuster le gain
-GM_DB = mag2db(GM)
-GM_des = 15;
-GM_compDB = GM_DB-GM_des;
+GM_DB = mag2db(GM);
+GM_des = 10;
+GM_compDB = GM_DB - GM_des;
 GM_comp = db2mag(GM_compDB);
 
-G_comp = (GM_comp*G_CB)*(0.0475/0.08);
+G_comp = (GM_comp * G_bandeCoupee);
 
-FTBF = feedback(G_comp,1)
+FTBF = feedback(G_comp,1);
 
+
+% 
+% figure('Name','Margin FTBF compensee')
+% margin(FTBF)
+% figure('Name','Bode FTBF compensee')
+% bode(FTBF)
+% figure('Name','Step FTBF compensee')
+% step(FTBF)
 
 %% erreur
 
 t = [0:0.01:100]';  % 201 points
-u = t.^2 / 2;
+u = t;
 y = lsim(FTBF,u,t);
 
 figure
@@ -201,7 +262,7 @@ plot(real(p1),imag(p1),'p')
 hold on
 rlocus(G_comp)
 hold on
-pol = rlocus(G_new,1);
+pol = rlocus(FTBO_AvPh,1);
 plot(real(pol), imag(pol),'s')
 
 figure
@@ -213,11 +274,13 @@ step(FTBF)
 
 
 
-% % Initialisation
-% constantes_APP5 % call le fichier des constantes
-% 
-% Profile_Tracking    % call le fichier Profile_Tracking.p (trajectoire de ref fournie)
-% plot(ttrk,utrk)
+
+
+
+
+
+
+
 
 
 

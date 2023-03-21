@@ -93,7 +93,7 @@ FTBO = tf(num, den)
 % -------------------
 
 phi = atand((-1*pi)./log(Mp/100));
-zeta = cosd(phi);
+zeta = cosd(phi)+0.165;
 
 %Wn1 et Wn2
 Wn1 = (4/ts)/zeta;
@@ -106,7 +106,9 @@ if Wn1 > Wn2
 elseif Wn2 > Wn1
      Wn = Wn2;     
 end
-   
+
+Wn = Wn+0;
+
 Wa = Wn*sqrt(1-zeta^2);
 
 p1 = -zeta*Wn + j*Wa;
@@ -144,9 +146,9 @@ FTBO_AvPh = FTBO*Ga;
 % hold on
 % plot(real(pol), imag(pol),'s')
 % legend
-% 
-% 
-% 
+
+
+
 % figure('Name','FTBO et FTBO_AvPh')
 % margin(FTBO)
 % hold on
@@ -159,65 +161,8 @@ FTBO_AvPh = FTBO*Ga;
 % plot(real(pol), imag(pol),'s')
 % grid on
 % legend
-
-
-
-
-
-
-
-
-
-
-
-
-%% Critères de sécurité
-
-%coupe bande
-beta = 5
-W0 = 55;        %obtenu a partir du diagramme de Bode
-
-H = tf([1 0 W0^2],[1 beta W0^2]);
-G_bandeCoupee = FTBO_AvPh * H;
-
-% figure('Name','bode')
-% bode(G_new)
-% hold on
-% margin(G_CB)
-
-% Valider DM
-[GM,PM,Wp,Wg] = margin(G_bandeCoupee);
-DM = PM/Wg*(pi/180);
-
-% Ajuster le gain
-GM_DB = mag2db(GM);
-GM_des = 15;
-GM_compDB = GM_DB - GM_des;
-GM_comp = db2mag(GM_compDB);
-
-G_comp = (GM_comp * G_bandeCoupee);
-
-FTBF = feedback(G_comp,1);
-
-
-
-figure('Name','Margin FTBF compensee')
-margin(FTBF)
-figure('Name','Bode FTBF compensee')
-bode(FTBF)
-figure('Name','Step FTBF compensee')
-step(FTBF)
-
-
-
-
-
-
-
-
-
 %% retard de phase RePh - VALIDE ET FONCTIONNEL
-Fudge_factor = 10;
+Fudge_factor = 5;
 
 
 % le v donne les va;lues
@@ -232,21 +177,113 @@ zr = real(p1) / Fudge_factor;
 
 pr = zr/K_des;
 Gr = tf([1 -zr],[1 -pr])
-FTBO_RePh = FTBO_AvPh * Gr;
+G_comp = FTBO_AvPh * Gr;
 
 
 
-figure('Name','FTBO et FTBO_RePh')
-rlocus(FTBO)
-hold on
+% figure('Name','FTBO et FTBO_RePh')
+% rlocus(FTBO)
+% hold on
+% plot(real(p1),imag(p1),'p')
+% hold on
+% rlocus(FTBO_RePh)
+% hold on
+% pol = rlocus(FTBO_RePh,1);
+% hold on
+% plot(real(pol), imag(pol),'s')
+% legend
+
+
+
+
+
+
+
+
+
+
+
+%% Critères de sécurité
+
+%coupe bande
+beta = 10;
+W0 = 55;        %obtenu a partir du diagramme de Bode
+
+H = tf([1 0 W0^2],[1 beta W0^2]);
+G_bandeCoupee = G_comp * H;
+
+% figure('Name','bode')
+% bode(FTBO_AvPh)
+% hold on
+% margin(G_bandeCoupee)
+
+% Valider DM
+[GM,PM,Wp,Wg] = margin(G_bandeCoupee);
+DM = PM/Wg*(pi/180);
+
+% Ajuster le gain
+GM_DB = mag2db(GM);
+GM_des = 10;
+GM_compDB = GM_DB - GM_des;
+GM_comp = db2mag(GM_compDB);
+
+G_comp = (GM_comp * G_bandeCoupee)*0.5;
+
+FTBF = feedback(G_comp,1);
+
+
+
+% figure('Name','Margin FTBF compensee')
+% margin(FTBF)
+% figure('Name','Bode FTBF compensee')
+% bode(FTBF)
+% figure('Name','Step FTBF compensee')
+% step(FTBF)
+
+
+
+
+
+
+%% erreur
+
+t = [0:0.01:100]';  % 201 points
+u = t;
+y = lsim(FTBF,u,t);
+
+figure
+plot(t,u-y)
+
+%% plot
+
+% Valider DM
+[GM,PM,Wp,Wg] = margin(G_comp);
+DM= PM/Wg*(pi/180)
+GM = mag2db(GM)
+
+
+figure('Name','bode comp')
+margin(G_comp)
+figure('Name','rlocus comp')
 plot(real(p1),imag(p1),'p')
 hold on
-rlocus(FTBO_RePh)
+rlocus(G_comp)
 hold on
-pol = rlocus(FTBO_RePh,1);
-hold on
+pol = rlocus(FTBO_AvPh,1);
 plot(real(pol), imag(pol),'s')
-legend
+
+figure
+bode(FTBF)
+figure
+step(FTBF)
+
+
+
+
+
+
+
+
 
 
 

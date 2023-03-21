@@ -66,158 +66,89 @@ denEL = [1 1020.51 37082.705 15346520.725 320776412.5 413500000 0];
 
 G = tf(numEL,denEL)
 
-Mp = 25;
-ts = 1;
-tr1 = 0.18;
-eRP_des = 0.08;           % erreur en regime permanent a une rampe
-fudge_factor = 9;      % facteur qui pousse vers zero
-marge = 10;
+%% AvPh
+BW = 10;
+PM_des = 50;
+eRP_des = 0.005;           % erreur en regime permanent a une rampe
+mrg = 0;
 
+[Gm,PM1,Wp,Wg] = margin(G);
 
-phi = atand((-1*pi)./log(Mp/100));
-zeta = cosd(phi)+0.165;
+zeta_des = (1/2)*sqrt(tand(PM_des)*sind(PM_des));
+Wn_des = BW/sqrt((1-2*zeta_des^2)+sqrt(4*zeta_des^4-4*zeta_des^2+2));
+Wg_des = (2*zeta_des*Wn_des)/tan(PM1);
 
-%Wn1 et Wn2
-Wn1 = (4/ts)/zeta;
-Wn2 = (1+1.1*zeta+1.4*zeta^2)/tr1;
+% le gain est simplement linverse du module
+[mag, pha] = bode(G, Wg_des);
+K_des = 1/mag;
 
-%Bigger Wn
-if Wn1 > Wn2
-    Wn = Wn1;     
-else
-     Wn = Wn2;
-end
+[Gm,PM2,Wp,Wg] = margin(G*K_des);
 
-Wa = Wn*sqrt(1-zeta^2);
+delta_phi = PM_des - PM2 + mrg;
+alpha = (1-sind(delta_phi))/(1+sind(delta_phi));
+T = 1/(Wg_des*sqrt(alpha));
+Ka = K_des/sqrt(alpha);
 
-p1 = -zeta*Wn + j*Wa;
-p2 = -zeta*Wn - j*Wa;
-% AvPh
-%phase au pole desire
-%on enleve 360 car sinon angle va donner un angle positif 
-Ph_G = ((angle(polyval(numEL,p1)/polyval(denEL,p1)))*180/pi)-360;
+Ga = Ka*alpha*tf([T 1],[alpha*T 1])
 
-delta_phi = -180-Ph_G+marge;
+G_Ga = G*Ga
 
-alpha = 180-phi;
-
-phi_z = (alpha + delta_phi)/2
-phi_p = (alpha - delta_phi)/2
-
-za = real(p1)-imag(p1)/tand(phi_z)
-pa = real(p1)-imag(p1)/tand(phi_p)
-
-numFT = [1 -za];
-denFT = [1 -pa];
-
-Ka = abs((polyval(denEL,p1)*polyval(denFT,p1))/(polyval(numEL,p1)*polyval(numFT,p1)))
-
-Ga = Ka * tf([1 -za],[1 -pa])
-
-% G_new = G*Ga
-% [num,den] = tfdata(G_new);
-% PI
-Kvel = 2.531e11/1.091e10;
-
-KI = 1/(Kvel*eRP_des);
-
-ZI = real(p1)/fudge_factor;
-
-Kp = -KI/ZI;
-
-GPI = Kp * tf([1 -ZI],[1 0])
-
-G_new = G*GPI*Ga 
-
-
-
+% %plot
 % figure
-% bode(G)
-% figure
-% margin(G_new)
-% figure('Name','noncompense')
-% rlocus(G)
-% figure('Name','compense')
-% 
-% plot(real(p1),imag(p1),'p')
-% 
-hold on
-rlocus(G)
-hold on
-pol = rlocus(G_new,1);
-plot(real(pol), imag(pol),'s')
-
-%% Critères de sécurité
-
-%coupe bande
-
-beta = 2
-W0 = 123;
-
-H = tf([1 0 W0^2],[1 beta W0^2])
-G_CB = G_new*H
-
-% figure('Name','bode')
-% bode(G_new)
+% margin(G)
 % hold on
-% margin(G_CB)
+% margin(G_Ga)
 
-% Valider DM
-[GM,PM,Wp,Wg] = margin(G_CB)
-DM= PM/Wg*(pi/180)
+%% RePh
+[NUM,DEN] = tfdata(G_Ga)
+num = NUM{1};
+den = DEN{1};
+fudge = 10;
 
-% Ajuster le gain
-GM_DB = mag2db(GM)
-GM_des = 15;
-GM_compDB = GM_DB-GM_des;
-GM_comp = db2mag(GM_compDB);
+%1
+Kvel = num(end)/den(end-1)
+K_des = 1/(Kvel*eRP_des)
 
-G_comp = (GM_comp*G_CB)*(0.0475/0.08);
+%2
+beta = K_des;
 
-FTBF = feedback(G_comp,1)
+%3
+T = fudge/Wg_des
 
+%4
+
+Gr = beta * tf([T 1],[T*beta 1])
+
+G_comp = G_Ga*Gr
+
+%plot
+figure
+% margin(G_Ga)
+% hold on
+% margin(Gr)
+% hold on
+% margin(G_comp)
 
 %% erreur
+%1
+[NUM,DEN] = tfdata(G_comp);
+num = NUM{1};
+den = DEN{1};
+Kvel = num(end)/den(end-1)
 
+%2
+FTBF = feedback(G_comp,1)
 t = [0:0.01:100]';  % 201 points
-u = t.^2 / 2;
+u = t;
 y = lsim(FTBF,u,t);
 
 figure
 plot(t,u-y)
 
-%% plot
-
-% Valider DM
-[GM,PM,Wp,Wg] = margin(G_comp);
-DM= PM/Wg*(pi/180)
-GM = mag2db(GM)
-
-
-figure('Name','bode comp')
-margin(G_comp)
-figure('Name','rlocus comp')
-plot(real(p1),imag(p1),'p')
-hold on
-rlocus(G_comp)
-hold on
-pol = rlocus(G_new,1);
-plot(real(pol), imag(pol),'s')
-
-figure
-bode(FTBF)
-figure
-step(FTBF)
 
 
 
 
-
-% % Initialisation
-% constantes_APP5 % call le fichier des constantes
-% 
-% Profile_Tracking    % call le fichier Profile_Tracking.p (trajectoire de ref fournie)
-% plot(ttrk,utrk)
 
 
 
