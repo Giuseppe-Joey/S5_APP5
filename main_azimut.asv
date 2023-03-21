@@ -137,8 +137,8 @@ denFT = [1 -pa];
 
 % GA VALIDE ET FONCTIONNEL
 Ka = abs((polyval(den,p1)*polyval(denFT,p1))/(polyval(num,p1)*polyval(numFT,p1)));
-Ga = Ka * tf([1 -za],[1 -pa])
-FTBO_AvPh = FTBO * Ga;
+Ga = Ka * tf([1 -za],[1 -pa]);
+FTBO_AvPh = FTBO*Ga;
 
 
 
@@ -153,6 +153,26 @@ pol = rlocus(FTBO_AvPh,1);
 hold on
 plot(real(pol), imag(pol),'s')
 legend
+
+
+
+
+
+
+% figure('Name','FTBO et FTBO_AvPh')
+% margin(FTBO)
+% hold on
+% plot(real(p1),imag(p1),'p')
+% hold on
+% margin(FTBO_AvPh)
+% hold on
+% pol = rlocus(FTBO_AvPh,1);
+% hold on
+% plot(real(pol), imag(pol),'s')
+% grid on
+% legend on
+
+
 
 
 
@@ -174,8 +194,7 @@ K_des = Kvel_d/Kvel
 zr = real(p1) / Fudge_factor;
 pr = zr/K_des;
 
-Kr = 1;
-Gr = Kr * tf([1 -zr],[1 -pr])
+Gr = tf([1 -zr],[1 -pr])
 FTBO_RePh = FTBO_AvPh * Gr;
 
 
