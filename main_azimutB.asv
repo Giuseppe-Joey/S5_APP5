@@ -85,11 +85,11 @@ G_comp = G_Ga*Gr
 
 %plot
 figure
-margin(G_Ga)
-hold on
-margin(Gr)
-hold on
-margin(G_comp)
+% margin(G_Ga)
+% hold on
+% margin(Gr)
+% hold on
+% margin(G_comp)
 
 
 
