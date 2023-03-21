@@ -29,7 +29,7 @@ G = tf(numAZ,denAZ)
 BW = 10;
 PM_des = 50;
 eRP_des = 0.005;           % erreur en regime permanent a une rampe
-mrg = 0;
+mrg = 6;
 
 [Gm,PM1,Wp,Wg] = margin(G);
 
@@ -89,7 +89,7 @@ figure
 % hold on
 % margin(Gr)
 % hold on
-% margin(G_comp)
+margin(G_comp)
 
 
 

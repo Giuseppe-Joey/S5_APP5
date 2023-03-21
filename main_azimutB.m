@@ -29,7 +29,7 @@ G = tf(numAZ,denAZ)
 BW = 10;
 PM_des = 50;
 eRP_des = 0.005;           % erreur en regime permanent a une rampe
-mrg = 0;
+mrg = 12;
 
 [Gm,PM1,Wp,Wg] = margin(G);
 
@@ -66,7 +66,7 @@ G_Ga = G*Ga
 [NUM,DEN] = tfdata(G_Ga)
 num = NUM{1};
 den = DEN{1};
-fudge = 10;
+fudge = 5;
 
 %1
 Kvel = num(end)/den(end-1)
@@ -85,10 +85,10 @@ G_comp = G_Ga*Gr
 
 %plot
 figure
-margin(G_Ga)
-hold on
-margin(Gr)
-hold on
+% margin(G_Ga)
+% hold on
+% margin(Gr)
+% hold on
 margin(G_comp)
 
 
