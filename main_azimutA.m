@@ -93,7 +93,8 @@ FTBO = tf(num, den)
 % -------------------
 
 phi = atand((-1*pi)./log(Mp/100));
-zeta = cosd(phi)+0.165;
+% zeta = cosd(phi)+0.165;
+zeta = cosd(phi);
 
 %Wn1 et Wn2
 Wn1 = (4/ts)/zeta;
@@ -132,8 +133,12 @@ denFT = [1 -pa];
 
 % GA VALIDE ET FONCTIONNEL
 Ka = abs((polyval(den,p1)*polyval(denFT,p1))/(polyval(num,p1)*polyval(numFT,p1)));
-Ga = Ka * tf([1 -za],[1 -pa])
+Ga = Ka * tf([1 -za],[1 -pa]) * 0.5
 FTBO_AvPh = FTBO * Ga
+
+
+
+
 
 % figure('Name','FTBO et FTBO_AvPh')
 % rlocus(FTBO)
@@ -184,17 +189,21 @@ Gr = tf([1 -zr],[1 -pr])
 G_comp = FTBO_AvPh * Gr;
 
 
-% figure('Name','FTBO et FTBO_RePh')
-% rlocus(FTBO)
+
+
+
+
+figure('Name','FTBO et FTBO_RePh')
+rlocus(FTBO)
+hold on
+plot(real(p1),imag(p1),'p')
 % hold on
-% plot(real(p1),imag(p1),'p')
-% hold on
-% rlocus(FTBO_RePh)
-% hold on
-% pol = rlocus(FTBO_RePh,1);
-% hold on
-% plot(real(pol), imag(pol),'s')
-% legend
+% rlocus(G_comp)
+hold on
+pol = rlocus(G_comp,1);
+hold on
+plot(real(pol), imag(pol),'s')
+legend
 
 
 
@@ -215,11 +224,6 @@ W0 = 55;        %obtenu a partir du diagramme de Bode
 H = tf([1 0 W0^2],[1 beta W0^2]);
 G_bandeCoupee = G_comp * H;
 
-% figure('Name','bode')
-% bode(FTBO_AvPh)
-% hold on
-% margin(G_bandeCoupee)
-
 % Valider DM
 [GM,PM,Wp,Wg] = margin(G_bandeCoupee);
 DM = PM/Wg*(pi/180);
@@ -230,18 +234,18 @@ GM_des = 10;
 GM_compDB = GM_DB - GM_des;
 GM_comp = db2mag(GM_compDB);
 
-G_comp = (GM_comp * G_bandeCoupee)*0.5;
+G_comp = (GM_comp * G_bandeCoupee) * 0.5
 
 FTBF = feedback(G_comp,1);
 
 
 
-% figure('Name','Margin FTBF compensee')
-% margin(FTBF)
-% figure('Name','Bode FTBF compensee')
-% bode(FTBF)
-% figure('Name','Step FTBF compensee')
-% step(FTBF)
+figure('Name','Margin FTBF compensee')
+margin(G_comp)
+figure('Name','Bode FTBF compensee')
+bode(G_comp)
+figure('Name','Step FTBF compensee')
+step(G_comp)
 
 
 
@@ -282,15 +286,15 @@ DM= PM/Wg*(pi/180)
 GM = mag2db(GM)
 
 
-figure('Name','bode comp')
-margin(G_comp)
-figure('Name','rlocus comp')
-plot(real(p1),imag(p1),'p')
-hold on
-rlocus(G_comp)
-hold on
-pol = rlocus(FTBO_AvPh,1);
-plot(real(pol), imag(pol),'s')
+% figure('Name','bode comp')
+% margin(G_comp)
+% figure('Name','rlocus comp')
+% plot(real(p1),imag(p1),'p')
+% hold on
+% rlocus(G_comp)
+% hold on
+% pol = rlocus(FTBO_AvPh,1);
+% plot(real(pol), imag(pol),'s')
 
 figure
 bode(FTBF)
@@ -304,7 +308,12 @@ step(FTBF)
 
 
 
-
+figure('Name','FTBO et G_Ga_Gr')
+margin(FTBO)
+hold on
+margin(FTBF)
+grid on
+legend
 
 
 
