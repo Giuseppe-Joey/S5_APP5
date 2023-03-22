@@ -275,7 +275,6 @@ PM_des = atand(2*zeta/(sqrt(sqrt(1+4*zeta^4) - (2*zeta^2))))
 
 
 % reponse du prof pour iterations
-
 % -------------------------
 pha_des = -180.0 + PM_des
 wg_des = 0.0;
