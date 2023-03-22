@@ -132,8 +132,8 @@ denFT = [1 -pa];
 
 % GA VALIDE ET FONCTIONNEL
 Ka = abs((polyval(den,p1)*polyval(denFT,p1))/(polyval(num,p1)*polyval(numFT,p1)));
-Ga = Ka * tf([1 -za],[1 -pa]);
-FTBO_AvPh = FTBO*Ga;
+Ga = Ka * tf([1 -za],[1 -pa])
+FTBO_AvPh = FTBO * Ga
 
 % figure('Name','FTBO et FTBO_AvPh')
 % rlocus(FTBO)
@@ -161,8 +161,13 @@ FTBO_AvPh = FTBO*Ga;
 % plot(real(pol), imag(pol),'s')
 % grid on
 % legend
+
+
+
+
+
 %% retard de phase RePh - VALIDE ET FONCTIONNEL
-Fudge_factor = 5;
+Fudge_factor = 10;
 
 
 % le v donne les va;lues
@@ -172,13 +177,11 @@ Kvel_d = 1 / Erp_A2
 Kvel = NUM(end)/DEN(end-1)
 K_des = Kvel_d/Kvel
 
-
 zr = real(p1) / Fudge_factor;
-
 pr = zr/K_des;
+
 Gr = tf([1 -zr],[1 -pr])
 G_comp = FTBO_AvPh * Gr;
-
 
 
 % figure('Name','FTBO et FTBO_RePh')
@@ -245,6 +248,11 @@ FTBF = feedback(G_comp,1);
 
 
 
+
+
+
+
+
 %% erreur
 
 t = [0:0.01:100]';  % 201 points
@@ -253,6 +261,17 @@ y = lsim(FTBF,u,t);
 
 figure
 plot(t,u-y)
+
+
+
+
+
+
+
+
+
+
+
 
 
 %% plot

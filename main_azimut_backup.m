@@ -72,10 +72,6 @@ constantes_APP5 % call le fichier des constantes
 
 
 
-% NOTE: fudge factor on le baisse pour augmenter la rapidite et on le monte pour
-% diminuer la phase
-Fudge_factor = 10;
-
 
 
 %% azimut code 
@@ -92,8 +88,18 @@ den = [1 1020.51 25082.705 3102480.725 64155612.5 82700000 0];
 FTBO = tf(num, den)
 % -------------------
 
+% NOTE: fudge factor on le baisse pour augmenter la rapidite et on le monte pour
+% diminuer la phase
+Fudge_factor = 10;
+
+
+%pour telescope A on doit faire lieu des racines
+%pour telescope B on doit faire Bode
+
+
 phi = atand((-1*pi)./log(Mp/100));
-zeta = cosd(phi)+0.165;
+zeta = cosd(phi);
+
 
 %Wn1 et Wn2
 Wn1 = (4/ts)/zeta;
@@ -107,6 +113,7 @@ elseif Wn2 > Wn1
      Wn = Wn2;     
 end
    
+
 Wa = Wn*sqrt(1-zeta^2);
 
 p1 = -zeta*Wn + j*Wa;
@@ -130,8 +137,15 @@ denFT = [1 -pa];
 
 % GA VALIDE ET FONCTIONNEL
 Ka = abs((polyval(den,p1)*polyval(denFT,p1))/(polyval(num,p1)*polyval(numFT,p1)));
-Ga = Ka * tf([1 -za],[1 -pa]);
+Ga = Ka * tf([1 -za],[1 -pa])
 FTBO_AvPh = FTBO*Ga;
+
+
+
+
+
+
+
 
 % figure('Name','FTBO et FTBO_AvPh')
 % rlocus(FTBO)
@@ -144,9 +158,9 @@ FTBO_AvPh = FTBO*Ga;
 % hold on
 % plot(real(pol), imag(pol),'s')
 % legend
-
-
-
+% 
+% 
+% 
 % figure('Name','FTBO et FTBO_AvPh')
 % margin(FTBO)
 % hold on
@@ -159,6 +173,62 @@ FTBO_AvPh = FTBO*Ga;
 % plot(real(pol), imag(pol),'s')
 % grid on
 % legend
+
+
+
+
+
+
+
+
+
+
+
+
+%% Critères de sécurité
+
+%coupe bande
+
+beta = 5
+W0 = 55;        %obtenu a partir du diagramme de Bode
+
+H = tf([1 0 W0^2],[1 beta W0^2])
+G_bandeCoupee = FTBO_AvPh * H
+
+% figure('Name','bode')
+% bode(G_new)
+% hold on
+% margin(G_CB)
+
+% Valider DM
+[GM,PM,Wp,Wg] = margin(G_bandeCoupee)
+DM = PM/Wg*(pi/180)
+
+% Ajuster le gain
+GM_DB = mag2db(GM)
+GM_des = 15;
+GM_compDB = GM_DB - GM_des;
+GM_comp = db2mag(GM_compDB);
+
+G_comp = (GM_comp * G_bandeCoupee);
+
+FTBF = feedback(G_comp,1)
+
+
+figure('Name','FTBF compensee')
+margin(FTBF)
+
+
+
+
+
+
+
+
+
+
+
+
 %% retard de phase RePh - VALIDE ET FONCTIONNEL
 Fudge_factor = 10;
 
@@ -175,107 +245,21 @@ zr = real(p1) / Fudge_factor;
 
 pr = zr/K_des;
 Gr = tf([1 -zr],[1 -pr])
-G_comp = FTBO_AvPh * Gr;
+FTBO_RePh = FTBO_AvPh * Gr;
 
 
 
-% figure('Name','FTBO et FTBO_RePh')
-% rlocus(FTBO)
-% hold on
-% plot(real(p1),imag(p1),'p')
-% hold on
-% rlocus(FTBO_RePh)
-% hold on
-% pol = rlocus(FTBO_RePh,1);
-% hold on
-% plot(real(pol), imag(pol),'s')
-% legend
-
-
-
-
-
-
-
-
-
-
-
-%% Critères de sécurité
-
-%coupe bande
-beta = 10;
-W0 = 55;        %obtenu a partir du diagramme de Bode
-
-H = tf([1 0 W0^2],[1 beta W0^2]);
-G_bandeCoupee = G_comp * H;
-
-% figure('Name','bode')
-% bode(FTBO_AvPh)
-% hold on
-% margin(G_bandeCoupee)
-
-% Valider DM
-[GM,PM,Wp,Wg] = margin(G_bandeCoupee);
-DM = PM/Wg*(pi/180);
-
-% Ajuster le gain
-GM_DB = mag2db(GM);
-GM_des = 10;
-GM_compDB = GM_DB - GM_des;
-GM_comp = db2mag(GM_compDB);
-
-G_comp = (GM_comp * G_bandeCoupee);
-
-FTBF = feedback(G_comp,1);
-
-
-% 
-% figure('Name','Margin FTBF compensee')
-% margin(FTBF)
-% figure('Name','Bode FTBF compensee')
-% bode(FTBF)
-% figure('Name','Step FTBF compensee')
-% step(FTBF)
-
-%% erreur
-
-t = [0:0.01:100]';  % 201 points
-u = t;
-y = lsim(FTBF,u,t);
-
-figure
-plot(t,u-y)
-
-%% plot
-
-% Valider DM
-[GM,PM,Wp,Wg] = margin(G_comp);
-DM= PM/Wg*(pi/180)
-GM = mag2db(GM)
-
-
-figure('Name','bode comp')
-margin(G_comp)
-figure('Name','rlocus comp')
+figure('Name','FTBO et FTBO_RePh')
+rlocus(FTBO)
+hold on
 plot(real(p1),imag(p1),'p')
 hold on
-rlocus(G_comp)
+rlocus(FTBO_RePh)
 hold on
-pol = rlocus(FTBO_AvPh,1);
+pol = rlocus(FTBO_RePh,1);
+hold on
 plot(real(pol), imag(pol),'s')
-
-figure
-bode(FTBF)
-figure
-step(FTBF)
-
-
-
-
-
-
-
+legend
 
 
 
