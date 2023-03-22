@@ -22,12 +22,6 @@ denAZ = [1 1020.51 25082.705 3102480.725 64155612.5 82700000 0];
 G = tf(numAZ,denAZ)
 
 
-
-
-
-
-
-
 %% AvPh
 BW = 10;
 PM_des = 50;
@@ -62,9 +56,6 @@ G_Ga = G*Ga
 % margin(G_Ga)
 
 
-
-
-
 %% RePh
 [NUM,DEN] = tfdata(G_Ga)
 num = NUM{1};
@@ -75,15 +66,10 @@ fudge = 5;
 Kvel = num(end)/den(end-1)
 K_des = 1/(Kvel*eRP_des)
 
-%2
 beta = K_des;
-
-%3
 T = fudge/Wg_des
 
-%4
 Gr = beta * tf([T 1],[T*beta 1])
-
 G_comp = G_Ga*Gr
 
 %plot
@@ -93,8 +79,6 @@ figure
 % margin(Gr)
 % hold on
 margin(G_comp)
-
-
 
 
 %% erreur

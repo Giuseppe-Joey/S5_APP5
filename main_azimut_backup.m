@@ -136,7 +136,7 @@ numFT = [1 -za];
 denFT = [1 -pa];
 
 % GA VALIDE ET FONCTIONNEL
-Ka = abs((polyval(den,p1)*polyval(denFT,p1))/(polyval(num,p1)*polyval(numFT,p1)));
+Ka = abs((polyval(den,p1)*polyval(denFT,p1))/(polyval(num,p1)*polyval(numFT,p1)))
 Ga = Ka * tf([1 -za],[1 -pa])
 FTBO_AvPh = FTBO*Ga;
 
@@ -147,32 +147,32 @@ FTBO_AvPh = FTBO*Ga;
 
 
 
-% figure('Name','FTBO et FTBO_AvPh')
-% rlocus(FTBO)
-% hold on
-% plot(real(p1),imag(p1),'p')
-% hold on
-% rlocus(FTBO_AvPh)
-% hold on
-% pol = rlocus(FTBO_AvPh,1);
-% hold on
-% plot(real(pol), imag(pol),'s')
-% legend
-% 
-% 
-% 
-% figure('Name','FTBO et FTBO_AvPh')
-% margin(FTBO)
-% hold on
-% plot(real(p1),imag(p1),'p')
-% hold on
-% margin(FTBO_AvPh)
-% hold on
-% pol = rlocus(FTBO_AvPh,1);
-% hold on
-% plot(real(pol), imag(pol),'s')
-% grid on
-% legend
+figure('Name','FTBO et FTBO_AvPh')
+rlocus(FTBO)
+hold on
+plot(real(p1),imag(p1),'p')
+hold on
+rlocus(FTBO_AvPh)
+hold on
+pol = rlocus(FTBO_AvPh,1);
+hold on
+plot(real(pol), imag(pol),'s')
+legend
+
+
+
+figure('Name','FTBO et FTBO_AvPh')
+margin(FTBO)
+hold on
+plot(real(p1),imag(p1),'p')
+hold on
+margin(FTBO_AvPh)
+hold on
+pol = rlocus(FTBO_AvPh,1);
+hold on
+plot(real(pol), imag(pol),'s')
+grid on
+legend
 
 
 
@@ -189,7 +189,7 @@ FTBO_AvPh = FTBO*Ga;
 
 %coupe bande
 
-beta = 5
+beta = 10;
 W0 = 55;        %obtenu a partir du diagramme de Bode
 
 H = tf([1 0 W0^2],[1 beta W0^2])
